@@ -32,6 +32,7 @@ import subprocess
 import RPi.GPIO as GPIO
 from time import sleep
 from pixels import pixels
+from MisakiFont import MisakiFont
 
 SOUND_DIR = '/home/pi/sound'
 SOUND_ACK = [
@@ -147,6 +148,7 @@ def process_event(event, device_id):
     global assistant
     global continue_flag
     global timeout_count
+    global misaki_font
 
     """Pretty prints events.
 
@@ -172,6 +174,7 @@ def process_event(event, device_id):
 
     if event.type == EventType.ON_RECOGNIZING_SPEECH_FINISHED:
         speech_str = event.args['text']
+        misaki_font.println(speech_str)
         if '照明' in speech_str:
             if 'つけて' in speech_str:
                 GPIO.output(PIN_LED, GPIO.HIGH)
@@ -233,6 +236,7 @@ def register_device(project_id, credentials, device_model_id, device_id):
 
 def main():
     global assistant
+    global misaki_font
 
     pixels.wakeup()
 
@@ -241,6 +245,8 @@ def main():
     GPIO.setup(PIN_BUTTON, GPIO.IN, GPIO.PUD_DOWN)
     GPIO.add_event_detect(PIN_BUTTON, GPIO.BOTH,
        callback=procButton, bouncetime=BOUNCE_MSEC)
+
+    misaki_font = MisakiFont()
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)
