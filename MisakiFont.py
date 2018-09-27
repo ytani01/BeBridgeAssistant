@@ -17,6 +17,7 @@ class MisakiFont:
         self.char_width = 8
         self.char_height = 8
         self.cur_row = 0
+        self.enable = True
 
         # Raspberry Pi pin configuration
         self.rst = 24
@@ -25,7 +26,12 @@ class MisakiFont:
         self.disp = Adafruit_SSD1306.SSD1306_128_64(rst=self.rst)
 
         # Initialize library.
-        self.disp.begin()
+        try:
+            self.disp.begin()
+        except:
+            self.enable =False
+            return
+            
         # Clear display.
         self.disp.clear()
         self.disp.display()
@@ -48,17 +54,23 @@ class MisakiFont:
         self.font = ImageFont.truetype(FONT_PATH, 8, encoding='unic')
 
     def clear(self):
+        if not self.enable:
+            return
         self.draw.rectangle((0,0,self.width,self.height), outline=0, fill=0)
         self.disp.image(self.image)
         #self.disp.clear()
         self.disp.display()
 
     def _draw1line(self, col, row, str):
+        if not self.enable:
+            return
         x = col * self.char_width
         y = row * self.char_height
         self.draw.text((x,y), str, font=self.font, fill=255)
 
     def println(self, str):
+        if not self.enable:
+            return
         self.str[self.cur_row] = str
         self.draw.rectangle((0,0,self.width,self.height), outline=0, fill=0)
         for r in range(self.rows):

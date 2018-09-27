@@ -43,7 +43,7 @@ SOUND_ACK = [
 proc = None
 
 PIN_LED = 12
-PIN_BUTTON = 13
+PIN_BUTTON = [13, 17]
 BOUNCE_MSEC = 500
 
 endword = [
@@ -109,7 +109,7 @@ def procButton(pin):
     global continue_flag
     global timeout_count
 
-    if pin == PIN_BUTTON:
+    if pin in PIN_BUTTON:
             continue_flag = True
             timeout_count = 0
             assistant.start_conversation()
@@ -242,9 +242,14 @@ def main():
 
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(PIN_LED, GPIO.OUT)
-    GPIO.setup(PIN_BUTTON, GPIO.IN, GPIO.PUD_DOWN)
-    GPIO.add_event_detect(PIN_BUTTON, GPIO.BOTH,
-       callback=procButton, bouncetime=BOUNCE_MSEC)
+    for p in PIN_BUTTON:
+        GPIO.setup(p, GPIO.IN, GPIO.PUD_UP)
+        if p == 13: # toggle button
+            GPIO.add_event_detect(p, GPIO.BOTH, callback=procButton,
+                                  bouncetime=BOUNCE_MSEC)
+        else:
+            GPIO.add_event_detect(p, GPIO.FALLING, callback=procButton,
+                                  bouncetime=BOUNCE_MSEC)
 
     misaki_font = MisakiFont()
 
