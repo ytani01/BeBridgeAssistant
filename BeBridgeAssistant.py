@@ -34,6 +34,9 @@ from time import sleep
 from pixels import pixels
 from MisakiFont import MisakiFont
 
+import threading
+import VL53L0X
+
 SOUND_DIR = '/home/pi/sound'
 SOUND_ACK = [
 	SOUND_DIR + '/computerbeep_43.mp3',
@@ -68,6 +71,51 @@ continue_flag = True
 timeout_count = 0
 
 DEVICE_API_URL = 'https://embeddedassistant.googleapis.com/v1alpha2'
+
+class DistSensor(threading.Thread):
+    DISTANCE_NEAR	= 100 # mm
+    DISTANCE_FAR	= 150 # mm
+
+    def __init__(self, assistant):
+        self.myname = __class__.__name__
+        print(self.myname + ':__init__()')
+        self.assistant = assistant
+        self.tof = None
+        self.tof_timing = 0
+        self.init_VL53L0X()
+
+        self.near_flag = False;
+
+        super().__init__()
+
+    def init_VL53L0X(self):
+        self.tof = VL53L0X.VL53L0X()
+        self.tof.start_ranging(VL53L0X.VL53L0X_BETTER_ACCURACY_MODE)
+        self.tof_timing = self.tof.get_timing()
+        if  self.tof_timing < 20000:
+            self.tof_timing = 20000
+
+    def get_distance(self):
+        distance = self.tof.get_distance()
+        return distance
+
+    def run(self):
+        while True:
+            distance = self.get_distance()
+            if distance < 0:
+                sleep(5)
+                continue
+            
+            elif distance < DistSensor.DISTANCE_NEAR:
+                if not self.near_flag:
+                    self.near_flag = True
+                    self.assistant.start_conversation()
+                    
+            elif distance > DistSensor.DISTANCE_FAR:
+                if self.near_flag:
+                    self.near_flag = False
+
+            sleep(0.1)
 
 def setContinueFlag(speech_str):
     global assistant
@@ -285,6 +333,10 @@ def main():
                                                             **json.load(f))
 
     with Assistant(credentials, args.device_model_id) as assistant:
+        ds = DistSensor(assistant)
+        ds.start()
+        sleep(1)
+
         events = assistant.start()
 
         print('device_model_id:', args.device_model_id + '\n' +
