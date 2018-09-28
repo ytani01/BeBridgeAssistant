@@ -13,5 +13,6 @@ fi
 
 . ${ENVBIN}/activate
 
-cp *.sh *.py *.so ${BINDIR}
-cp -r font ${HOME}
+cp -v B*.sh ${BINDIR}
+cp -v *.py *.so ${ENVBIN}
+cp -v -r font ${HOME}

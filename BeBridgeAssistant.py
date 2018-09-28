@@ -222,7 +222,7 @@ def process_event(event, device_id):
 
     if event.type == EventType.ON_RECOGNIZING_SPEECH_FINISHED:
         speech_str = event.args['text']
-        misaki_font.println(speech_str)
+        misaki_font.println('< ' + speech_str)
         if '照明' in speech_str:
             if 'つけて' in speech_str:
                 GPIO.output(PIN_LED, GPIO.HIGH)
@@ -231,6 +231,10 @@ def process_event(event, device_id):
                 GPIO.output(PIN_LED, GPIO.LOW)
                 assistant.stop_conversation()
         setContinueFlag(speech_str)
+
+    if event.type == EventType.ON_RENDER_RESPONSE:
+        speech_str = event.args['text']
+        misaki_font.println('> ' + speech_str)
 
     if event.type == EventType.ON_CONVERSATION_TURN_TIMEOUT:
         timeout_count += 1

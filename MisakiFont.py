@@ -24,6 +24,7 @@ class MisakiFont:
 
         #
         self.disp = Adafruit_SSD1306.SSD1306_128_64(rst=self.rst)
+        #self.disp = Adafruit_SSD1306.SSD1306_96_16(rst=self.rst)
 
         # Initialize library.
         try:
