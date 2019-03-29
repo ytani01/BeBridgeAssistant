@@ -33,6 +33,7 @@ import RPi.GPIO as GPIO
 from time import sleep
 from pixels import pixels
 from MisakiFont import MisakiFont
+from ipaddr import ipaddr
 
 import threading
 import VL53L0X
@@ -151,7 +152,7 @@ def turnEnd():
     cmd = ['amixer', 'sset', 'Mic', 'toggle']
     proc = subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc = subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
+
 def procButton(pin):
     global assistant
     global continue_flag
@@ -210,6 +211,7 @@ def process_event(event, device_id):
         print()
 
     print(event)
+    print(event.args)
 
     if event.type == EventType.ON_START_FINISHED:
         play_ack(0)
@@ -232,6 +234,7 @@ def process_event(event, device_id):
                 assistant.stop_conversation()
         setContinueFlag(speech_str)
 
+#    if event.type == EventType.ON_RESPONDING_STARTED:
     if event.type == EventType.ON_RENDER_RESPONSE:
         speech_str = event.args['text']
         misaki_font.println('> ' + speech_str)
@@ -304,6 +307,8 @@ def main():
                                   bouncetime=BOUNCE_MSEC)
 
     misaki_font = MisakiFont()
+    ip = ipaddr()
+    misaki_font.println('--' + ip.ip_addr() + '--')
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)
